@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: Tangram-SpaGFT
+Version: -version-
+Summary: Modified version of Tangram by adding SpaGFT
+Author: Tommaso Biancalani, Gabriele Scalia, Jixin Liu
+Author-email: frankliu210@163.com
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3.8.5

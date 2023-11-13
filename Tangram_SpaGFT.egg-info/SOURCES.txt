@@ -1,0 +1,12 @@
+setup.py
+Tangram_SpaGFT/__init__.py
+Tangram_SpaGFT/_version.py
+Tangram_SpaGFT/mapping_optimizer.py
+Tangram_SpaGFT/mapping_utils.py
+Tangram_SpaGFT/plot_utils.py
+Tangram_SpaGFT/utils.py
+Tangram_SpaGFT.egg-info/PKG-INFO
+Tangram_SpaGFT.egg-info/SOURCES.txt
+Tangram_SpaGFT.egg-info/dependency_links.txt
+Tangram_SpaGFT.egg-info/requires.txt
+Tangram_SpaGFT.egg-info/top_level.txt
