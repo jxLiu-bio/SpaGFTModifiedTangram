@@ -1,52 +1,65 @@
-SpaGCN can ntegrating gene expression and histology to identify spatial domains and spatially variable genes using graph convolutional networks. SpaGCN_SpaGFT, is an improved version for orignal SpaGCN by extending orignal gene expresssion features with Fourier features of spots. Then, the new feature matrix will be used to predict spatial domain cluster labels.
+Tangram is a Python package, written in PyTorch and based on scanpy, for mapping single-cell (or single-nucleus) gene expression data onto spatial gene expression data. The single-cell dataset and the spatial dataset should be collected from the same anatomical region/tissue type, ideally from a biological replicate, and need to share a set of genes. Tangram_SpaGFT, is an improved version for orignal Tangram by adding the frequency constraints.
 
-## How to install SpaGCN_SpaGFT?
-SpaGCN_SpaGFT is based on SpaGCN.  To install  it, make sure you have [PyTorch](https://pytorch.org/) and [scanpy](https://scanpy.readthedocs.io/en/stable/) installed.
+## How to install Tangram_SpaGFT?
+SpaGCN_SpaGFT is based on Tangram.  To install  it, make sure you have [PyTorch](https://pytorch.org/) and [scanpy](https://scanpy.readthedocs.io/en/stable/) installed.
 
 Create a conda environment
 ```
-conda create -n spagcn_spagft_env python==3.8
+conda create -n tangram_spagft_env python==3.8.5
 ```
 and activate the environment
 ```
-conda activate spagcn_spagft_env
+conda activate tangram_spagft_env
 ```
 
-Next, install SpaGCN_SpaGFT
+Next, install Tangram_SpaGFT
 ```
 python setup.py install
 ```
 
-## Run SpaGCN_SpaGFT.
+## Run Tangram_SpaGFT.
 To begin with, import following modules in python environment.
 ```
 import scanpy as sc
-import SpaGCN_SpaGFT as spg
-import cv2
-```
-Next, load your spatial transcriptomics data and corresponding image.
-```
-adata = sc.read_visium(PATH_TO_YOUR_DATASET)
-img = cv2.imread(PATH_TO_TIFF_IMAGE)
-# adjust spatial information
-adata.obs['x_array'] = adata.obs['array_row']
-adata.obs['y_array'] = adata.obs['array_col']
-adata.obs['x_pixel'] = adata.obsm['spatial'][:, 1]
-adata.obs['y_pixel'] = adata.obsm['spatial'][:, 0]
-x_array = adata.obs["x_array"].tolist()
-y_array = adata.obs["y_array"].tolist()
-x_pixel = adata.obs["x_pixel"].tolist()
-y_pixel = adata.obs["y_pixel"].tolist()
+import Tangram_SpaGFT as tg
 ```
 
-Run detect_spatial_domains_ez_mode_gft function
+Load your spatial data and your single cell data (which should be in AnnData format), and pre-process them using tg.pp_adatas:
 ```
-n_clusters = NUMBER_OF_CLUSTERS
-adata.obs["pred"] = spg.detect_spatial_domains_ez_mode_gft(adata, img,x_array, y_array, x_pixel, y_pixel, n_clusters=n_clusters, histology=True,r_seed=100, t_seed=100, n_seed=100, num_fcs=1000)
+ad_sp = sc.read_h5ad(path)
+ad_sc = sc.read_h5ad(path)
+tg.pp_adatas(ad_sc, ad_sp, genes=None)
 ```
 
-Fianally, obtain the refinement results by
+The function `pp_adatas` finds the common genes between `adata_sc`, `adata_sp`, and saves them in two `adatas.uns` for mapping and analysis later. Also, it subsets the intersected genes to a set of training genes passed by genes. If genes=None, Tangram maps using all genes shared by the two datasets. Once the datasets are pre-processed we can map:
 ```
-adata.obs["pred"] = adata.obs["pred"].astype('category')
-adata.obs["refined_pred"] = spg.spatial_domains_refinement_ez_mode(sample_id=adata.obs.index.tolist(),pred=adata.obs["pred"].tolist(), x_array=x_array, y_array=y_array, shape="hexagon")
+ad_map = tg.map_cells_to_space_gft(ad_sc, ad_sp)
+```
+
+The returned AnnData,`ad_map`, is a cell-by-voxel structure where `ad_map.X[i, j]` gives the probability for cell `i` to be in voxel `j`. This structure can be used to project gene expression from the single cell data to space, which is achieved via `tg.project_genes`. 
+```
+ad_ge = tg.project_genes(ad_map, ad_sc)
+```
+The returned `ad_ge` is a voxel-by-gene AnnData, similar to spatial data `ad_sp`, but where gene expression has been projected from the single cells. This allows to extend gene throughput, or correct for dropouts, if the single cells have higher quality (or more genes) than spatial data. It can also be used to transfer cell types onto space. 
+
+### How to run Tangram_SpaGFT at cluster level
+Prepare the input data as the same you would do for cell level Tangram mapping. Then map using following code:
+
+```
+    ad_map = tg.map_cells_to_space_gft(
+                   ad_sc, 
+                   ad_sp,         
+                   mode='clusters',
+                   cluster_label='subclass_label')
+```
+
+Provided cluster_label must belong to ad_sc.obs. Above example code is to map at 'subclass_label' level, and the 'subclass_label' is in ad_sc.obs.
+
+To project gene expression to space, use `tg.project_genes` and be sure to set the `cluster_label` argument to the same cluster label in mapping.
+
+```
+    ad_ge = tg.project_genes(
+                  ad_map, 
+                  ad_sc,
+                  cluster_label='subclass_label')
 ```
