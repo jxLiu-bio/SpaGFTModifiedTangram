@@ -407,7 +407,7 @@ def map_cells_to_space_gft(
         lambda_count=1,
         lambda_f_reg=1,
         ratio_fms=10,
-        ratio_neighbors=1,
+        ratio_neighbors=0.5,
         target_count=None,
         random_state=None,
         verbose=True,
@@ -429,6 +429,10 @@ def map_cells_to_space_gft(
         lambda_d (float): Optional. Hyperparameter for the density term of the optimizer. Default is 0.
         lambda_g1 (float): Optional. Hyperparameter for the gene-voxel similarity term of the optimizer. Default is 1.
         lambda_g2 (float): Optional. Hyperparameter for the voxel-gene similarity term of the optimizer. Default is 0.
+	lambda_g3 (float): Optional. Hyperparameter for the gene-voxel similarity term of the optimizer in frequency domain. Default is 1.
+	lambda_g4 (float): Optional. Hyperparameter for the voxel-gene similarity term of the optimizer in frequency domain. Default is 0.
+	ratio_fms (float): Optional. Determining the number of fourier modes used. The number of FMs used is ratio_fms * sqrt(n_spots). The default is 10.
+	ratio_neighbors: Optional. Determining the number of neighobors when construct a knn graph of spots. The number of spots is ratio_neighbors * sqrt(n_spots). The default is 0.5.
         lambda_r (float): Optional. Strength of entropy regularizer. An higher entropy promotes probabilities of each cell peaked over a narrow portion of space. lambda_r = 0 corresponds to no entropy regularizer. Default is 0.
         lambda_count (float): Optional. Regularizer for the count term. Default is 1. Only valid when mode == 'constrained'
         lambda_f_reg (float): Optional. Regularizer for the filter, which promotes Boolean values (0s and 1s) in the filter. Only valid when mode == 'constrained'. Default is 1.

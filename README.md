@@ -33,8 +33,9 @@ tg.pp_adatas(ad_sc, ad_sp, genes=None)
 
 The function `pp_adatas` finds the common genes between `adata_sc`, `adata_sp`, and saves them in two `adatas.uns` for mapping and analysis later. Also, it subsets the intersected genes to a set of training genes passed by genes. If genes=None, Tangram maps using all genes shared by the two datasets. Once the datasets are pre-processed we can map:
 ```
-ad_map = tg.map_cells_to_space_gft(ad_sc, ad_sp)
+ad_map = tg.map_cells_to_space_gft(ad_sc, ad_sp, spatial_key=['x', 'y'])
 ```
+Note that spatial information should be provided in `adata.obs` and obtain by `adata.obs.loc[:, spatial_key]`.
 
 The returned AnnData,`ad_map`, is a cell-by-voxel structure where `ad_map.X[i, j]` gives the probability for cell `i` to be in voxel `j`. This structure can be used to project gene expression from the single cell data to space, which is achieved via `tg.project_genes`. 
 ```
@@ -46,9 +47,10 @@ The returned `ad_ge` is a voxel-by-gene AnnData, similar to spatial data `ad_sp`
 Prepare the input data as the same you would do for cell level Tangram mapping. Then map using following code:
 
 ```
-    ad_map = tg.map_cells_to_space_gft(
+ad_map = tg.map_cells_to_space_gft(
                    ad_sc, 
-                   ad_sp,         
+                   ad_sp,
+			       spatial_key=['x', 'y'],         
                    mode='clusters',
                    cluster_label='subclass_label')
 ```
@@ -58,8 +60,7 @@ Provided cluster_label must belong to ad_sc.obs. Above example code is to map at
 To project gene expression to space, use `tg.project_genes` and be sure to set the `cluster_label` argument to the same cluster label in mapping.
 
 ```
-    ad_ge = tg.project_genes(
-                  ad_map, 
-                  ad_sc,
-                  cluster_label='subclass_label')
+ad_ge = tg.project_genes(ad_map, 
+						 ad_sc,
+					     cluster_label='subclass_label')
 ```
